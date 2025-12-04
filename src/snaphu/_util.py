@@ -196,7 +196,9 @@ def read_from_file(
     n = dataset.shape[0]
     for slice_ in slices(0, n, batchsize):
         # Infer the shape and size of the corresponding slice of the dataset.
-        shape = (slice_.stop - slice_.start,) + dataset.shape[1:]
+        first_dim = slice_.stop - slice_.start
+        other_dims = dataset.shape[1:]
+        shape = (first_dim, *other_dims)
         size = np.prod(shape)
 
         # Read a batch of data from the file.
@@ -263,7 +265,8 @@ def scratch_directory(
         else:
             scratchdir.mkdir(parents=True)
 
-    yield scratchdir
-
-    if delete:
-        shutil.rmtree(scratchdir)
+    try:
+        yield scratchdir
+    finally:
+        if delete:
+            shutil.rmtree(scratchdir)
